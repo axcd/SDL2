@@ -20,9 +20,8 @@ import android.graphics.*;
 import android.media.*;
 import android.hardware.*;
 
-
 /**
-    SDL Activity
+    SDL Activity     
 */
 public class SDLActivity extends Activity {
     private static final String TAG = "SDL";
@@ -46,8 +45,8 @@ public class SDLActivity extends Activity {
 
     // Load the .so
     static {
-        System.loadLibrary("SDL2");
-        //System.loadLibrary("SDL2_image");
+        System.loadLibrary("SDL2"); 
+        System.loadLibrary("SDL2_image");
         //System.loadLibrary("SDL2_mixer");
         //System.loadLibrary("SDL2_net");
         //System.loadLibrary("SDL2_ttf");
@@ -76,11 +75,11 @@ public class SDLActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.v("SDL", "onCreate():" + mSingleton);
         super.onCreate(savedInstanceState);
-        
+        MLog.info("abc");
         SDLActivity.initialize();
         // So we can call stuff from static callbacks
         mSingleton = this;
-
+MLog.info("java");
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
         
@@ -657,7 +656,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                     }
                 }
             }).start();
-        }
+        }   
     }
 
     // unused
