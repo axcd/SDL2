@@ -75,11 +75,11 @@ public class SDLActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.v("SDL", "onCreate():" + mSingleton);
         super.onCreate(savedInstanceState);
-        MLog.info("abc");
+       
         SDLActivity.initialize();
         // So we can call stuff from static callbacks
         mSingleton = this;
-MLog.info("java");
+
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
         
