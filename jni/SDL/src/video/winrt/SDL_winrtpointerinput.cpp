@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,13 +38,12 @@ extern "C" {
 
 /* File-specific globals: */
 static SDL_TouchID WINRT_TouchID = 1;
-static unsigned int WINRT_LeftFingerDown = 0;
 
 
 void
 WINRT_InitTouch(_THIS)
 {
-    SDL_AddTouch(WINRT_TouchID, "");
+    SDL_AddTouch(WINRT_TouchID, SDL_TOUCH_DEVICE_DIRECT, "");
 }
 
 
@@ -83,11 +82,11 @@ WINRT_TransformCursorPosition(SDL_Window * window,
     // Compute coordinates normalized from 0..1.
     // If the coordinates need to be sized to the SDL window,
     // we'll do that after.
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
     outputPosition.X = rawPosition.X / nativeWindow->Bounds.Width;
     outputPosition.Y = rawPosition.Y / nativeWindow->Bounds.Height;
 #else
-    switch (DisplayProperties::CurrentOrientation)
+    switch (WINRT_DISPLAY_PROPERTY(CurrentOrientation))
     {
         case DisplayOrientations::Portrait:
             outputPosition.X = rawPosition.X / nativeWindow->Bounds.Width;
@@ -231,15 +230,6 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
         Windows::Foundation::Point normalizedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, NormalizeZeroToOne);
         Windows::Foundation::Point windowPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, TransformToSDLWindowSize);
 
-        if (!WINRT_LeftFingerDown) {
-            if (button) {
-                SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
-                SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
-            }
-
-            WINRT_LeftFingerDown = pointerPoint->PointerId;
-        }
-
         SDL_SendTouch(
             WINRT_TouchID,
             (SDL_FingerID) pointerPoint->PointerId,
@@ -262,11 +252,7 @@ WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPo
 
     if ( ! WINRT_IsTouchEvent(pointerPoint)) {
         SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
-    } else if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
-        if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
-            SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
-        }
-
+    } else {
         SDL_SendTouchMotion(
             WINRT_TouchID,
             (SDL_FingerID) pointerPoint->PointerId,
@@ -289,13 +275,6 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
     } else {
         Windows::Foundation::Point normalizedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, NormalizeZeroToOne);
 
-        if (WINRT_LeftFingerDown == pointerPoint->PointerId) {
-            if (button) {
-                SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
-            }
-            WINRT_LeftFingerDown = 0;
-        }
-    
         SDL_SendTouch(
             WINRT_TouchID,
             (SDL_FingerID) pointerPoint->PointerId,
@@ -306,6 +285,28 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
     }
 }
 
+void WINRT_ProcessPointerEnteredEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
+{
+    if (!window) {
+        return;
+    }
+
+    if (!WINRT_IsTouchEvent(pointerPoint)) {
+        SDL_SetMouseFocus(window);
+    }
+}
+
+void WINRT_ProcessPointerExitedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
+{
+    if (!window) {
+        return;
+    }
+
+    if (!WINRT_IsTouchEvent(pointerPoint)) {
+        SDL_SetMouseFocus(NULL);
+    }
+}
+
 void
 WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
@@ -313,9 +314,8 @@ WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::Po
         return;
     }
 
-    // FIXME: This may need to accumulate deltas up to WHEEL_DELTA
-    short motion = pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
-    SDL_SendMouseWheel(window, 0, 0, motion);
+    float motion = (float) pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
+    SDL_SendMouseWheel(window, 0, 0, (float) motion, SDL_MOUSEWHEEL_NORMAL);
 }
 
 void
@@ -347,7 +347,7 @@ WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::Mouse
     // http://msdn.microsoft.com/en-us/library/windows/apps/windows.devices.input.mouseeventargs.mousedelta ),
     // does not seem to indicate (to me) that its values should be so large.  It
     // says that its values should be a "change in screen location".  I could
-    // be misinterpreting this, however a post on MSDN from a Microsoft engineer (see: 
+    // be misinterpreting this, however a post on MSDN from a Microsoft engineer (see:
     // http://social.msdn.microsoft.com/Forums/en-US/winappswithnativecode/thread/09a9868e-95bb-4858-ba1a-cb4d2c298d62 ),
     // indicates that these values are in DIPs, which is the same unit used
     // by CoreWindow's PointerMoved events (via the Position field in its CurrentPoint
