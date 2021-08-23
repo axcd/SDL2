@@ -1,3 +1,3 @@
-# view AndroidManifest.xml #generated:55
+# view AndroidManifest.xml #generated:72
 -keep class org.libsdl.app.SDLActivity { <init>(...); }
 

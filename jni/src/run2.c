@@ -5,8 +5,8 @@
 #include "SDL_ttf.h"
 #define PI 3.14159265
 
-int Window_WIDTH = 720;
-int Window_HEIGHT = 1280;
+int Window_WIDTH = 1080;
+int Window_HEIGHT = 960;
 
 const int UP = 1;
 const int DWON = 2;
@@ -18,6 +18,7 @@ SDL_Renderer *render = NULL;
 SDL_Texture *bkgtex = NULL;
 SDL_Texture *footex = NULL;
 SDL_Texture *joytex = NULL;
+Mix_Music *low = NULL;
 
 SDL_Event event;
 SDL_Rect dstrect;
@@ -92,7 +93,7 @@ int Init() {
   if(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0){
 	  return 1;
   }
-
+ low = Mix_LoadWAV( "low.wav" );
   return 0;
 }
 
@@ -190,8 +191,10 @@ void move() {
   }
   
   if (code != 0){	
-	Mix_Music *sound = Mix_LoadMUS("audio/low.wav");
-	Mix_PlayMusic(sound, 1);
+	//Mix_Music *sound = Mix_LoadMUS("audio/low.wav");
+	//Mix_PlayMusic(sound, 1);
+	
+	Mix_PlayChannel( 1, low, 0 );
     srcrect.x += 64;
     srcrect.x = srcrect.x % 256;
   }
