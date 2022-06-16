@@ -68,10 +68,11 @@
         <!-- Example of setting SDL hints from AndroidManifest.xml:
         <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
          -->
-     
+		<!--landscape portrait-->
+			
         <activity 
 			android:name="SDLActivity"
-			android:screenOrientation="landscape"
+			android:screenOrientation="portrait"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"

@@ -8,6 +8,10 @@ and may not be redistributed without written permission.*/
 #include "SDL_mixer.h"
 #include <stdio.h>
 
+#define bool int
+#define true 1
+#define false 0
+
 //Screen attributes
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -36,7 +40,7 @@ Mix_Chunk *high = NULL;
 Mix_Chunk *med = NULL;
 Mix_Chunk *low = NULL;
 
-SDL_Surface *load_image( std::string filename )
+SDL_Surface *load_image( char * filename )
 {
     //The image that's loaded
     SDL_Surface* loadedImage = NULL;
@@ -45,7 +49,7 @@ SDL_Surface *load_image( std::string filename )
     SDL_Surface* optimizedImage = NULL;
 
     //Load the image
-    loadedImage = IMG_Load( filename.c_str() );
+    loadedImage = IMG_Load( filename );
 
     //If the image loaded
     if( loadedImage != NULL )

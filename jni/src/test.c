@@ -23,6 +23,7 @@ int main( int argc, char* args[] )
 	SDL_Surface* screenSurface = NULL;
 
 	Mix_Chunk *low = NULL;
+	Mix_Music *sound = NULL;
 	
 	//Initialize SDL
 	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
@@ -50,12 +51,12 @@ int main( int argc, char* args[] )
 		
 			Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 			
-			Mix_Music *sound = Mix_LoadMUS("test.mp3");		
+			sound = Mix_LoadMUS("test.mp3");		
 			low = Mix_LoadWAV( "low.wav" );
 			
 			Mix_PlayMusic(sound, 1);	
 
-			while(1==1){
+			while(1){
 				Mix_PlayChannel( -1, low, 0 );
 				SDL_Delay( 1000 );
 			}		

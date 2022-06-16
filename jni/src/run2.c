@@ -19,6 +19,7 @@ SDL_Texture *bkgtex = NULL;
 SDL_Texture *footex = NULL;
 SDL_Texture *joytex = NULL;
 Mix_Music *low = NULL;
+Mix_Music *sound = NULL;
 
 SDL_Event event;
 SDL_Rect dstrect;
@@ -94,6 +95,10 @@ int Init() {
 	  return 1;
   }
  low = Mix_LoadWAV( "low.wav" );
+ 
+ //Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+ sound = Mix_LoadMUS("test.mp3");
+ 
   return 0;
 }
 
@@ -195,6 +200,9 @@ void move() {
 	//Mix_PlayMusic(sound, 1);
 	
 	Mix_PlayChannel( 1, low, 0 );
+	
+	//Mix_PlayMusic(sound, 1);
+ 
     srcrect.x += 64;
     srcrect.x = srcrect.x % 256;
   }
@@ -215,6 +223,7 @@ void display() {
   SDL_RenderCopy(render, bkgtex, NULL, NULL);
   SDL_RenderCopy(render, footex, &srcrect, &dstrect);
   put_joystick();
+  
   SDL_RenderPresent(render);
 }
 
@@ -237,7 +246,7 @@ int main(int argc, char **args) {
     return 1;
   if (load_image())
     return 1;
-
+	//SDL_StartTextInput();  //启动键盘
   while (!quit) {
     fps = SDL_GetTicks();
 
