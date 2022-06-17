@@ -93,9 +93,18 @@ int main(int argc, char *argv[]){
 	//获取当前年月
 	date();
 	
+	//启动画面
+	for(int i=0;i<10;i++)
+	{
+		SDL_SetRenderDrawColor(render, (25*i)%255, (25*i)%255, (25*i)%255, (25*i)%255);
+		SDL_RenderClear(render);
+		SDL_RenderPresent(render);
+		SDL_Delay(50);
+	}
+	
 	//主循环
 	while (quit){
-			
+		
 		//计算开始结束
 		int s=dayOftheWeekThisYearQueryMonth(year,month)-1;
 		int e=monthDays[month]+1;
@@ -103,7 +112,7 @@ int main(int argc, char *argv[]){
 		rect2.h = k * 150 - 10;
 		
 		//绘制大背景
-		SDL_SetRenderDrawColor(render, 255, 255, 255, 0);
+		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
 		SDL_RenderClear(render);
 		
 		//画背景墙
@@ -112,15 +121,7 @@ int main(int argc, char *argv[]){
 		//画标题
 		SDL_Color textColor = { 25, 100, 255 };
 		char ss[20]={'0'};
-		text(render, datestr(ss, "."), textColor, rect1, 5);
-		
-		//画前一月
-		SDL_Color textColor1 = { 20, 200, 20 };
-		text(render, "前一月", textColor1, rect3, 20);
-		
-		//画后一月
-		SDL_Color textColor2 = { 20, 200, 20 };
-		text(render, "后一月", textColor2, rect4, 20);
+		text(render, datestr(ss, "."), textColor, rect1, 15);
 		
 		//画周几
 		SDL_Color textColor3 = { 250, 0, 250 };
@@ -138,7 +139,7 @@ int main(int argc, char *argv[]){
 			rect02.x += ((i+s)%7)*130;
 			rect02.y += ((i+s)/7+1)*150;
 			drawrect(render, &rect02, 200, 0, 250, 0);
-			text(render, day[i], textColor4, rect02, 25);
+			text(render, day[i], textColor4, rect02, 30);
 		}
 		
 		//画点击效果
@@ -153,6 +154,14 @@ int main(int argc, char *argv[]){
 				fillrect(render, &rect0, 250, 0, 250, 0);
 			}	
 		}
+		
+		//画前一月
+		SDL_Color textColor1 = { 50, 150, 250 };
+		text(render, "前一月", textColor1, rect3, 20);
+		
+		//画后一月
+		SDL_Color textColor2 = { 50, 150, 250 };
+		text(render, "后一月", textColor2, rect4, 20);
 		
 		//显示
 		SDL_RenderPresent(render);
