@@ -17,6 +17,11 @@ SDL_Texture *fonttex = NULL;
 //按键动作变量
 SDL_Event event;
 
+//变量日期
+int year = 2022;
+int month = 6;
+int day = 18;
+
 //获取两者最小值
 int min(int a, int b)
 {
@@ -92,6 +97,9 @@ int main(int argc, char *argv[]){
 	
 	//获取当前年月
 	date();
+	year = now_year;
+	month = now_month;
+	day = now_month;
 	
 	//启动画面
 	for(int i=0;i<10;i++)
@@ -104,6 +112,9 @@ int main(int argc, char *argv[]){
 	
 	//主循环
 	while (quit){
+		
+		//保证使用时时间跳转
+		date();
 		
 		//计算开始结束
 		int s=dayOftheWeekThisYearQueryMonth(year,month)-1;
@@ -118,10 +129,19 @@ int main(int argc, char *argv[]){
 		//画背景墙
 		fillrect(render, &rect2, 200, 200, 250, 0);
 		
+		//选中今天
+		if(year==now_year && month==now_month)
+		{
+			SDL_Rect trect = rect;
+			trect.x += ((now_day+s)%7)*130;
+			trect.y += ((now_day+s)/7+1)*150;
+			fillrect(render, &trect, 250, 150, 200, 0);
+		}
+		
 		//画标题
 		SDL_Color textColor = { 25, 100, 255 };
 		char ss[20]={'0'};
-		text(render, datestr(ss, "."), textColor, rect1, 15);
+		text(render, datestr(year, month, ss, "."), textColor, rect1, 15);
 		
 		//画周几
 		SDL_Color textColor3 = { 250, 0, 250 };
@@ -139,7 +159,13 @@ int main(int argc, char *argv[]){
 			rect02.x += ((i+s)%7)*130;
 			rect02.y += ((i+s)/7+1)*150;
 			drawrect(render, &rect02, 200, 0, 250, 0);
-			text(render, day[i], textColor4, rect02, 30);
+			if(year==now_year && month==now_month && i==now_day)
+			{
+				SDL_Color textColor = { 255, 0, 0 };
+				text(render, days[i], textColor, rect02, 30);
+			}else{
+				text(render, days[i], textColor4, rect02, 30);
+			}
 		}
 		
 		//画点击效果

@@ -2,8 +2,10 @@
 #include<stdlib.h>
 #include<time.h>
 
-int year = 2022;
-int month = 6;
+//记录今天
+int now_year = 2022;
+int now_month = 6;
+int now_day = 18;
 
 //存放每个月月份天数的数组，这是全局变量
 int monthDays[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
@@ -11,7 +13,7 @@ int monthDays[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
 
 char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
 //月天数
-char *day[32] = {"0","01","02","03","04","05","06","07","08","09",
+char *days[32] = {"0","01","02","03","04","05","06","07","08","09",
 				"10","11","12","13","14","15","16","17","18","19",
 				"20","21","22","23","24","25","26","27","28","29",
 				"30","31"
@@ -24,8 +26,9 @@ void date()
 	struct tm *p;
 	time (&now);
 	p=localtime(&now);
-	year = p->tm_year+1900;
-	month = p->tm_mon+1;
+	now_year = p->tm_year+1900;
+	now_month = p->tm_mon+1;
+	now_day = p->tm_mday;
 }
 
 //判断是否润年
@@ -98,7 +101,7 @@ void itoa(int a, char *s)
 }
 
 //日期str
-char *datestr(char *dstr, char * spit)
+char *datestr(int year, int month, char *dstr, char * spit)
 {
 	itoa(year, dstr);
 	char tmp[11]={'0'};
