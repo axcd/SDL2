@@ -2,6 +2,9 @@
 #include<stdlib.h>
 #include<time.h>
 
+int year = 2022;
+int month = 6;
+
 //存放每个月月份天数的数组，这是全局变量
 int monthDays[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
 
@@ -14,9 +17,7 @@ char *day[32] = {"0","01","02","03","04","05","06","07","08","09",
 				"30","31"
 				};
 
-int year = 2022;
-int month = 6;
-
+//当前年月
 void date()
 {
 	time_t now;
@@ -94,4 +95,15 @@ void itoa(int a, char *s)
          char c = a%10 +48;
          *p-- = c;
      }while((a=a/10)>0);
+}
+
+//日期str
+char *datestr(char *dstr, char * spit)
+{
+	itoa(year, dstr);
+	char tmp[11]={'0'};
+	itoa(month, tmp);
+	strcat(dstr, spit);
+	strcat(dstr, tmp);
+	return dstr;
 }
