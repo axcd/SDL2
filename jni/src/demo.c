@@ -1,6 +1,8 @@
 #include<stdio.h>
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include "SDL.h"
+#include "SDL_image.h"
+#include "SDL_mixer.h"
+#include "SDL_ttf.h"
 #include "calender.c"
 
 //窗口变量
@@ -8,6 +10,10 @@ SDL_Window* window = NULL;
 
 //渲染变量
 SDL_Renderer* render = NULL;
+
+//背景图
+SDL_Surface *bkg = NULL;
+SDL_Texture *bkgtex = NULL;
 
 //字体
 TTF_Font *font = NULL;	
@@ -81,19 +87,19 @@ int main(int argc, char *argv[]){
 	//矩形
 	const SDL_Rect rect = { 90,250,120,140 };
 	//游标
-	SDL_Rect rect0 = { 110,120,60,60 };
+	SDL_Rect rect0 = { 110,120,10,10 };
 	//标题框
 	SDL_Rect rect1 = { 430,80,220,100 };
 	//背景框
 	SDL_Rect rect2 = { 90,400,900,890 };
-	//last框
-	SDL_Rect rect3 = { 30,50,250,100 };
-	//next框
-	SDL_Rect rect4 = { 800,50,250,100 };
 	
 	//记录被点击位置
 	char flag = 0;
-	int x=0, y=0, quit = 1;
+	int x = 0, y = 0, quit = 1;
+	char draw = 0;
+	
+	//滑动距离
+	int x1=0,x2=0,xx=0;
 	
 	//获取当前年月
 	date();
@@ -102,13 +108,15 @@ int main(int argc, char *argv[]){
 	day = now_month;
 	
 	//启动画面
-	for(int i=0;i<10;i++)
-	{
-		SDL_SetRenderDrawColor(render, (25*i)%255, (25*i)%255, (25*i)%255, (25*i)%255);
-		SDL_RenderClear(render);
-		SDL_RenderPresent(render);
-		SDL_Delay(50);
-	}
+  	bkg = IMG_Load("bkg.jpg");
+  	if (bkg == NULL) {
+   	 	return 1;
+  	}
+ 	bkgtex = SDL_CreateTextureFromSurface(render, bkg);
+    SDL_FreeSurface(bkg);
+	SDL_SetTextureAlphaMod(bkgtex, 0);
+    SDL_RenderCopy(render, bkgtex, NULL, NULL);
+  	SDL_RenderPresent(render);
 	
 	//主循环
 	while (quit){
@@ -123,23 +131,25 @@ int main(int argc, char *argv[]){
 		rect2.h = k * 150 - 10;
 		
 		//绘制大背景
-		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
 		SDL_RenderClear(render);
+		SDL_RenderCopy(render, bkgtex, NULL, NULL);
 		
 		//画背景墙
-		fillrect(render, &rect2, 200, 200, 250, 0);
+		SDL_Rect brect =rect2;
+		brect.x += xx;
+		fillrect(render, &brect, 200, 200, 250, 0);
 		
 		//选中今天
 		if(year==now_year && month==now_month)
 		{
 			SDL_Rect trect = rect;
-			trect.x += ((now_day+s)%7)*130;
+			trect.x += ((now_day+s)%7)*130+xx;
 			trect.y += ((now_day+s)/7+1)*150;
 			fillrect(render, &trect, 250, 150, 200, 0);
 		}
 		
 		//画标题
-		SDL_Color textColor = { 25, 100, 255 };
+		SDL_Color textColor = { 125, 60, 255 };
 		char ss[20]={'0'};
 		text(render, datestr(year, month, ss, "."), textColor, rect1, 15);
 		
@@ -147,7 +157,7 @@ int main(int argc, char *argv[]){
 		SDL_Color textColor3 = { 250, 0, 250 };
 		for(int i=0;i<7;i++){
 			SDL_Rect rect01 = rect;
-			rect01.x += i*130;
+			rect01.x += i*130+xx;
 			fillrect(render, &rect01, 100, 200, 50, 0);
 			text(render, week[i], textColor3, rect01, 20);
 		}
@@ -156,7 +166,7 @@ int main(int argc, char *argv[]){
 		SDL_Color textColor4 = { 0, 100, 255 };
 		for(int i=1;i<e;i++){
 			SDL_Rect rect02 = rect;
-			rect02.x += ((i+s)%7)*130;
+			rect02.x += ((i+s)%7)*130+xx;
 			rect02.y += ((i+s)/7+1)*150;
 			drawrect(render, &rect02, 200, 0, 250, 0);
 			if(year==now_year && month==now_month && i==now_day)
@@ -169,25 +179,42 @@ int main(int argc, char *argv[]){
 		}
 		
 		//画点击效果
-		if(flag==1){
-			if(x>30 && x<280 && y>50 && y<180) {
-				fillrect(render, &rect3, 20, 0, 250, 0);
-			}else if(x>800 && x< 1050 && y> 50&& y<180) {
-				fillrect(render, &rect4, 20, 0, 250, 0);
-			}else{
-				rect0.x = x;
-				rect0.y = y;
-				fillrect(render, &rect0, 250, 0, 250, 0);
-			}	
+		if(flag==0){
+			rect0.x = x;
+			rect0.y = y;
+			fillrect(render, &rect0, 250, 0, 250, 0);
 		}
 		
-		//画前一月
-		SDL_Color textColor1 = { 50, 150, 250 };
-		text(render, "前一月", textColor1, rect3, 20);
+		if(flag==1){
+			if(xx<-100){
+				xx -= 5;
+				if(xx<-1100) {
+					nextmonth(&year, &month);
+					xx=1300;
+					flag=2;
+				}
+			}else if(xx>100){
+				xx += 5;
+				if(xx>1100){
+					lastmonth(&year, &month); 
+					xx=-1300;
+					flag=2;
+				} 
+			}else{
+				xx=0;
+			}
+		}
 		
-		//画后一月
-		SDL_Color textColor2 = { 50, 150, 250 };
-		text(render, "后一月", textColor2, rect4, 20);
+		if(flag==2){
+			if(xx>0)
+			{
+				xx -= 5;
+			}else if(xx<0){
+				xx += 5;
+			}else{
+				flag = 3;
+			}
+		}
 		
 		//显示
 		SDL_RenderPresent(render);
@@ -201,24 +228,27 @@ int main(int argc, char *argv[]){
 				break;
 			}
 
+			if(event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				x1 = event.button.x;
+			}
 			if(event.type == SDL_MOUSEMOTION){
 				x = event.button.x;
 				y = event.button.y;
-				flag = 1;
+				xx = x -x1;
+				flag = 0;
 			}
 			
 			//抬起动作
 			if(event.type == SDL_MOUSEBUTTONUP){
-				if(x>30 && x<280 && y>50 && y<180) 
-					lastmonth(&year, &month);
-				else if(x>800 && x< 1050 && y> 50&& y<180) {
-					nextmonth(&year, &month);
-				}
-				flag = 0;
+				flag = 1;
 				break;
 			}
 		}
 	}
+	
+	//释放
+	SDL_DestroyTexture(bkgtex);	
 	
 	//关闭font
     TTF_CloseFont( font );
