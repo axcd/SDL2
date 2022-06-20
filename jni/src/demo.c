@@ -36,7 +36,7 @@ int min(int a, int b)
 }
 
 //更新rect
-void updateRect(SDL_Rect *prect, int x, int y, int w, int h)
+void changeRect(SDL_Rect *prect, int x, int y, int w, int h)
 {
 	(*prect).x += x;
 	(*prect).y += y;
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]){
 		
 		//画背景墙
 		SDL_Rect brect =rect2;
-		updateRect(&brect, xx, 0, 0, 0);
+		changeRect(&brect, xx, 0, 0, 0);
 		fillrect(render, &brect, 200, 200, 250, 0);
 		
 		//画标题
@@ -160,17 +160,17 @@ int main(int argc, char *argv[]){
 		//画周几
 		SDL_Color textColor3 = { 250, 0, 250 };
 		rect01 = rect;
-		updateRect(&rect01, xx, 0, 0, 0);
+		changeRect(&rect01, xx, 0, 0, 0);
 		for(int i=0;i<7;i++){
 			fillrect(render, &rect01, 100, 200, 50, 0);
 			text(render, week[i], textColor3, rect01, 20);
-			updateRect(&rect01, 130, 0, 0, 0);
+			changeRect(&rect01, 130, 0, 0, 0);
 		}
 		
 		//画数字
 		SDL_Color textColor4 = { 0, 100, 255 };
 		rect02 = rect;
-		updateRect(&rect02, xx+s*130, 150, 0, 0);
+		changeRect(&rect02, xx+s*130, 150, 0, 0);
 		for(int i=1;i<e;i++){
 			drawrect(render, &rect02, 200, 0, 250, 0);
 			if(year==now_year && month==now_month && i==now_day)
@@ -181,12 +181,12 @@ int main(int argc, char *argv[]){
 			}else{
 				text(render, days[i], textColor4, rect02, 30);
 			}
-			updateRect(&rect02, 130, 0, 0, 0);
+			changeRect(&rect02, 130, 0, 0, 0);
 			//修正
 			if((i+s)%7==0)
 			{
-				updateRect(&rect02, -7*130, 0, 0, 0);
-				updateRect(&rect02, 0, 150, 0, 0);
+				changeRect(&rect02, -7*130, 0, 0, 0);
+				changeRect(&rect02, 0, 150, 0, 0);
 			}
 		}
 		
