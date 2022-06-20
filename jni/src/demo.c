@@ -3,7 +3,8 @@
 #include "SDL_image.h"
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
-#include "calender.c"
+#include "calendarh.c"
+#include "calendar.c"
 
 //窗口变量
 SDL_Window* window = NULL;
@@ -32,6 +33,15 @@ int day = 18;
 int min(int a, int b)
 {
 	return a<b?a:b;
+}
+
+//更新rect
+void updateRect(SDL_Rect *prect, int x, int y, int w, int h)
+{
+	(*prect).x += x;
+	(*prect).y += y;
+	(*prect).w += w;
+	(*prect).h += h;
 }
 
 //画字
@@ -72,7 +82,7 @@ int main(int argc, char *argv[]){
 	TTF_Init();
 
 	//创建窗口
-	window = SDL_CreateWindow("Canlender SDL", 
+	window = SDL_CreateWindow("Canlendar SDL", 
 								SDL_WINDOWPOS_CENTERED, 
 								SDL_WINDOWPOS_CENTERED,
 								1080, 2480, 
@@ -87,16 +97,19 @@ int main(int argc, char *argv[]){
 	//矩形
 	const SDL_Rect rect = { 90,250,120,140 };
 	//游标
-	SDL_Rect rect0 = { 110,120,10,10 };
+	SDL_Rect rect0 = { 110,120,20,20 };
 	//标题框
 	SDL_Rect rect1 = { 430,80,220,100 };
 	//背景框
 	SDL_Rect rect2 = { 90,400,900,890 };
+	SDL_Rect rect01, rect02;
+	//calendarView
+	//CalendarView *pcv = (CalendarView *)malloc(sizeof(CalendarView));
+	//getRects((SDL_Rect *)pcv,90,250,120,140,130,150,0,7);
 	
 	//记录被点击位置
 	char flag = 0;
 	int x = 0, y = 0, quit = 1;
-	char draw = 0;
 	
 	//滑动距离
 	int x1=0,x2=0,xx=0;
@@ -125,9 +138,9 @@ int main(int argc, char *argv[]){
 		date();
 		
 		//计算开始结束
-		int s=dayOftheWeekThisYearQueryMonth(year,month)-1;
+		int s=dayOftheWeekThisYearQueryMonth(year,month);
 		int e=monthDays[month]+1;
-		int k = (e+s)%7==0?(e+s)/7:(e+s)/7+1;
+		int k = (e+s-1)%7==0?(e+s-1)/7:(e+s-1)/7+1;
 		rect2.h = k * 150 - 10;
 		
 		//绘制大背景
@@ -136,17 +149,8 @@ int main(int argc, char *argv[]){
 		
 		//画背景墙
 		SDL_Rect brect =rect2;
-		brect.x += xx;
+		updateRect(&brect, xx, 0, 0, 0);
 		fillrect(render, &brect, 200, 200, 250, 0);
-		
-		//选中今天
-		if(year==now_year && month==now_month)
-		{
-			SDL_Rect trect = rect;
-			trect.x += ((now_day+s)%7)*130+xx;
-			trect.y += ((now_day+s)/7+1)*150;
-			fillrect(render, &trect, 250, 150, 200, 0);
-		}
 		
 		//画标题
 		SDL_Color textColor = { 125, 60, 255 };
@@ -155,64 +159,72 @@ int main(int argc, char *argv[]){
 		
 		//画周几
 		SDL_Color textColor3 = { 250, 0, 250 };
+		rect01 = rect;
+		updateRect(&rect01, xx, 0, 0, 0);
 		for(int i=0;i<7;i++){
-			SDL_Rect rect01 = rect;
-			rect01.x += i*130+xx;
 			fillrect(render, &rect01, 100, 200, 50, 0);
 			text(render, week[i], textColor3, rect01, 20);
+			updateRect(&rect01, 130, 0, 0, 0);
 		}
 		
 		//画数字
 		SDL_Color textColor4 = { 0, 100, 255 };
+		rect02 = rect;
+		updateRect(&rect02, xx+s*130, 150, 0, 0);
 		for(int i=1;i<e;i++){
-			SDL_Rect rect02 = rect;
-			rect02.x += ((i+s)%7)*130+xx;
-			rect02.y += ((i+s)/7+1)*150;
 			drawrect(render, &rect02, 200, 0, 250, 0);
 			if(year==now_year && month==now_month && i==now_day)
 			{
+				fillrect(render, &rect02, 250, 150, 200, 0);
 				SDL_Color textColor = { 255, 0, 0 };
 				text(render, days[i], textColor, rect02, 30);
 			}else{
 				text(render, days[i], textColor4, rect02, 30);
 			}
+			updateRect(&rect02, 130, 0, 0, 0);
+			//修正
+			if((i+s)%7==0)
+			{
+				updateRect(&rect02, -7*130, 0, 0, 0);
+				updateRect(&rect02, 0, 150, 0, 0);
+			}
 		}
 		
 		//画点击效果
-		if(flag==0){
+		if(flag==1){
 			rect0.x = x;
 			rect0.y = y;
 			fillrect(render, &rect0, 250, 0, 250, 0);
 		}
 		
-		if(flag==1){
+		if(flag==2){
 			if(xx<-100){
-				xx -= 5;
-				if(xx<-1100) {
+				xx -= 10;
+				if(xx<-1000) {
 					nextmonth(&year, &month);
-					xx=1300;
-					flag=2;
+					xx=1000;
+					flag=3;
 				}
 			}else if(xx>100){
-				xx += 5;
-				if(xx>1100){
+				xx += 10;
+				if(xx>1000){
 					lastmonth(&year, &month); 
-					xx=-1300;
-					flag=2;
+					xx=-1000;
+					flag=3;
 				} 
 			}else{
 				xx=0;
 			}
 		}
 		
-		if(flag==2){
+		if(flag==3){
 			if(xx>0)
 			{
-				xx -= 5;
+				xx -= 10;
 			}else if(xx<0){
-				xx += 5;
+				xx += 10;
 			}else{
-				flag = 3;
+				flag = 0;
 			}
 		}
 		
@@ -236,12 +248,12 @@ int main(int argc, char *argv[]){
 				x = event.button.x;
 				y = event.button.y;
 				xx = x -x1;
-				flag = 0;
+				flag = 1;
 			}
 			
 			//抬起动作
 			if(event.type == SDL_MOUSEBUTTONUP){
-				flag = 1;
+				flag = 2;
 				break;
 			}
 		}
