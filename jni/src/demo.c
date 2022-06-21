@@ -3,7 +3,7 @@
 #include "SDL_image.h"
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
-#include "calendarh.c"
+#include "calendarView.c"
 #include "calendar.c"
 
 //窗口变量
@@ -17,9 +17,7 @@ SDL_Surface *bkg = NULL;
 SDL_Texture *bkgtex = NULL;
 
 //字体
-TTF_Font *font = NULL;	
-SDL_Surface *tmp = NULL;
-SDL_Texture *fonttex = NULL;
+TTF_Font *font = NULL;
 	
 //按键动作变量
 SDL_Event event;
@@ -28,51 +26,6 @@ SDL_Event event;
 int year = 2022;
 int month = 6;
 int day = 18;
-
-//获取两者最小值
-int min(int a, int b)
-{
-	return a<b?a:b;
-}
-
-//更新rect
-void changeRect(SDL_Rect *prect, int x, int y, int w, int h)
-{
-	(*prect).x += x;
-	(*prect).y += y;
-	(*prect).w += w;
-	(*prect).h += h;
-}
-
-//画字
-void text(SDL_Renderer *render, char * str, SDL_Color textColor, SDL_Rect dstrect, int margin)
-{
-	SDL_Rect frect = dstrect;
-	int m = min(margin, min(frect.w/2-5, frect.h/2-5));
-	frect.x += m;
-	frect.y += m;
-	frect.w -= m*2;
-	frect.h -= m*2;
-	tmp = TTF_RenderUTF8_Solid( font, str, textColor );
-	fonttex = SDL_CreateTextureFromSurface(render, tmp);
-	SDL_RenderCopy(render, fonttex, NULL, &frect);
-	SDL_FreeSurface(tmp);
-	SDL_DestroyTexture(fonttex);		
-}
-
-//画框
-void drawrect(SDL_Renderer * renderer, SDL_Rect * rect, Uint8 r, Uint8 g, Uint8 b,  Uint8 a)
-{
-	SDL_SetRenderDrawColor(render, r, g, b, a);
-	SDL_RenderDrawRect(render, rect);
-}
-
-//填充框
-void fillrect(SDL_Renderer * render, SDL_Rect * rect, Uint8 r, Uint8 g, Uint8 b,  Uint8 a)
-{
-	SDL_SetRenderDrawColor(render, r, g, b, a);
-	SDL_RenderFillRect(render, rect);
-}
 
 //main
 int main(int argc, char *argv[]){
@@ -93,26 +46,17 @@ int main(int argc, char *argv[]){
 	
 	//创建字体
 	font = TTF_OpenFont("GB2312.ttf", 100);
+	SDL_Color textColor = { 125, 60, 255 };
 	
 	//矩形
-	const SDL_Rect rect = { 90,250,120,140 };
-	//游标
-	SDL_Rect rect0 = { 110,120,20,20 };
-	//标题框
-	SDL_Rect rect1 = { 430,80,220,100 };
-	//背景框
-	SDL_Rect rect2 = { 90,400,900,890 };
-	SDL_Rect rect01, rect02;
-	//calendarView
-	//CalendarView *pcv = (CalendarView *)malloc(sizeof(CalendarView));
-	//getRects((SDL_Rect *)pcv,90,250,120,140,130,150,0,7);
+	SDL_Rect rect = { 90,250,120,140 };
 	
 	//记录被点击位置
 	char flag = 0;
 	int x = 0, y = 0, quit = 1;
 	
 	//滑动距离
-	int x1=0,x2=0,xx=0;
+	int x1=0, xx=0;
 	
 	//获取当前年月
 	date();
@@ -141,62 +85,63 @@ int main(int argc, char *argv[]){
 		int s=dayOftheWeekThisYearQueryMonth(year,month);
 		int e=monthDays[month]+1;
 		int k = (e+s-1)%7==0?(e+s-1)/7:(e+s-1)/7+1;
-		rect2.h = k * 150 - 10;
+		int h = k * 150 - 10;
 		
 		//绘制大背景
 		SDL_RenderClear(render);
 		SDL_RenderCopy(render, bkgtex, NULL, NULL);
-		
-		//画背景墙
-		SDL_Rect brect =rect2;
-		changeRect(&brect, xx, 0, 0, 0);
-		fillrect(render, &brect, 200, 200, 250, 0);
-		
+			
 		//画标题
-		SDL_Color textColor = { 125, 60, 255 };
+		setRect(&rect, 430, 80, 220, 100);
+		setTextColor(&textColor, 125, 60, 255);
 		char ss[20]={'0'};
-		text(render, datestr(year, month, ss, "."), textColor, rect1, 15);
+		text(render, font, datestr(year, month, ss, "."), textColor, rect, 15);
 		
+		//画日历背景
+		setRect(&rect, 90, 400, 900, h);
+		changeRect(&rect, xx, 0, 0, 0);
+		fillrect(render, &rect, 200, 200, 250, 0);
+	
 		//画周几
-		SDL_Color textColor3 = { 250, 0, 250 };
-		rect01 = rect;
-		changeRect(&rect01, xx, 0, 0, 0);
+		setTextColor(&textColor, 250, 0, 250);
+		setRect(&rect, 90, 250, 120, 140);
+		changeRect(&rect, xx, 0, 0, 0);
 		for(int i=0;i<7;i++){
-			fillrect(render, &rect01, 100, 200, 50, 0);
-			text(render, week[i], textColor3, rect01, 20);
-			changeRect(&rect01, 130, 0, 0, 0);
+			fillrect(render, &rect, 100, 200, 50, 0);
+			text(render, font, week[i], textColor, rect, 20);
+			changeRect(&rect, 130, 0, 0, 0);
 		}
 		
 		//画数字
-		SDL_Color textColor4 = { 0, 100, 255 };
-		rect02 = rect;
-		changeRect(&rect02, xx+s*130, 150, 0, 0);
+		setRect(&rect, 90, 250, 120, 140);
+		changeRect(&rect, xx+s*130, 150, 0, 0);
 		for(int i=1;i<e;i++){
-			drawrect(render, &rect02, 200, 0, 250, 0);
+			drawrect(render, &rect, 200, 0, 250, 0);
 			if(year==now_year && month==now_month && i==now_day)
 			{
-				fillrect(render, &rect02, 250, 150, 200, 0);
-				SDL_Color textColor = { 255, 0, 0 };
-				text(render, days[i], textColor, rect02, 30);
+				fillrect(render, &rect, 250, 150, 200, 0);
+				setTextColor(&textColor, 250, 0, 0);
+				text(render, font, days[i], textColor, rect, 30);
 			}else{
-				text(render, days[i], textColor4, rect02, 30);
+				setTextColor(&textColor, 0, 50, 250);
+				text(render, font, days[i], textColor, rect, 30);
 			}
-			changeRect(&rect02, 130, 0, 0, 0);
+			changeRect(&rect, 130, 0, 0, 0);
 			//修正
 			if((i+s)%7==0)
 			{
-				changeRect(&rect02, -7*130, 0, 0, 0);
-				changeRect(&rect02, 0, 150, 0, 0);
+				changeRect(&rect, -7*130, 0, 0, 0);
+				changeRect(&rect, 0, 150, 0, 0);
 			}
 		}
 		
 		//画点击效果
 		if(flag==1){
-			rect0.x = x;
-			rect0.y = y;
-			fillrect(render, &rect0, 250, 0, 250, 0);
+			setRect(&rect, x, y, 20, 20);
+			fillrect(render, &rect, 250, 0, 250, 0);
 		}
 		
+		//手滑动效果
 		if(flag==2){
 			if(xx<-100){
 				xx -= 10;
@@ -217,6 +162,7 @@ int main(int argc, char *argv[]){
 			}
 		}
 		
+		//自动滑动效果
 		if(flag==3){
 			if(xx>0)
 			{
