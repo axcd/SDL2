@@ -18,6 +18,7 @@ SDL_Texture *bkgtex = NULL;
 
 //字体
 TTF_Font *font = NULL;
+Font_Texture *pFT = NULL; 
 	
 //按键动作变量
 SDL_Event event;
@@ -45,8 +46,9 @@ int main(int argc, char *argv[]){
 	render = SDL_CreateRenderer(window, -1,0);
 	
 	//创建字体
-	font = TTF_OpenFont("GB2312.ttf", 100);
+	font = TTF_OpenFont("GB2312.ttf", 200);
 	SDL_Color textColor = { 125, 60, 255 };
+	pFT = newFont(font, &textColor);
 	
 	//矩形
 	SDL_Rect rect = { 90,250,120,140 };
@@ -56,13 +58,16 @@ int main(int argc, char *argv[]){
 	int x = 0, y = 0, quit = 1;
 	
 	//滑动距离
-	int x1=0, xx=0;
+	int x1=0, xx=0, z=100;
+	
+	//帧
+	int fps = 0;
 	
 	//获取当前年月
 	date();
 	year = now_year;
 	month = now_month;
-	day = now_month;
+	//day = now_day;
 	
 	//启动画面
   	bkg = IMG_Load("bkg.jpg");
@@ -88,14 +93,16 @@ int main(int argc, char *argv[]){
 		int h = k * 150 - 10;
 		
 		//绘制大背景
-		SDL_RenderClear(render);
+		//SDL_RenderClear(render);
 		SDL_RenderCopy(render, bkgtex, NULL, NULL);
 			
 		//画标题
+		char ss[20]={'0'};
 		setRect(&rect, 430, 80, 220, 100);
 		setTextColor(&textColor, 125, 60, 255);
-		char ss[20]={'0'};
-		text(render, font, datestr(year, month, ss, "."), textColor, rect, 15);
+		setFont( pFT, datestr(year, month, ss, "."), 200, 90);
+		drawFont(render, pFT, rect);
+		//text(render, font, datestr(year, month, ss, "."), textColor, rect, 15);
 		
 		//画日历背景
 		setRect(&rect, 90, 400, 900, h);
@@ -103,12 +110,14 @@ int main(int argc, char *argv[]){
 		fillrect(render, &rect, 200, 200, 250, 0);
 	
 		//画周几
-		setTextColor(&textColor, 250, 0, 250);
 		setRect(&rect, 90, 250, 120, 140);
 		changeRect(&rect, xx, 0, 0, 0);
+		setTextColor(&textColor, 250, 0, 250);
 		for(int i=0;i<7;i++){
 			fillrect(render, &rect, 100, 200, 50, 0);
-			text(render, font, week[i], textColor, rect, 20);
+			setFont(pFT, week[i], 90, 110);
+			drawFont(render, pFT, rect);
+			//text(render, font, week[i], textColor, rect, 20);
 			changeRect(&rect, 130, 0, 0, 0);
 		}
 		
@@ -121,11 +130,13 @@ int main(int argc, char *argv[]){
 			{
 				fillrect(render, &rect, 250, 150, 200, 0);
 				setTextColor(&textColor, 250, 0, 0);
-				text(render, font, days[i], textColor, rect, 30);
 			}else{
 				setTextColor(&textColor, 0, 50, 250);
-				text(render, font, days[i], textColor, rect, 30);
+				
 			}
+			setFont(pFT, days[i], 70, 80);
+			drawFont(render, pFT, rect);
+			//text(render, font, days[i], textColor, rect, 30);
 			changeRect(&rect, 130, 0, 0, 0);
 			//修正
 			if((i+s)%7==0)
@@ -137,21 +148,21 @@ int main(int argc, char *argv[]){
 		
 		//画点击效果
 		if(flag==1){
-			setRect(&rect, x, y, 20, 20);
+			setRect(&rect, x-10, y-10, 20, 20);
 			fillrect(render, &rect, 250, 0, 250, 0);
 		}
 		
 		//手滑动效果
 		if(flag==2){
 			if(xx<-100){
-				xx -= 10;
+				xx -= z;
 				if(xx<-1000) {
 					nextmonth(&year, &month);
 					xx=1000;
 					flag=3;
 				}
 			}else if(xx>100){
-				xx += 10;
+				xx += z;
 				if(xx>1000){
 					lastmonth(&year, &month); 
 					xx=-1000;
@@ -166,16 +177,23 @@ int main(int argc, char *argv[]){
 		if(flag==3){
 			if(xx>0)
 			{
-				xx -= 10;
+				xx -= z;
 			}else if(xx<0){
-				xx += 10;
+				xx += z;
 			}else{
 				flag = 0;
 			}
 		}
 		
+		//帧数
+		fps = SDL_GetTicks() - fps;
+		if (fps < 20) {
+			SDL_Delay(20 - fps);
+		}
+		
 		//显示
 		SDL_RenderPresent(render);
+		fps = SDL_GetTicks();
 		
 		//获取事件
 		while (SDL_PollEvent(&event)) {
@@ -204,6 +222,9 @@ int main(int argc, char *argv[]){
 			}
 		}
 	}
+	
+	//释放font
+	destroyFont(pFT);
 	
 	//释放
 	SDL_DestroyTexture(bkgtex);	
