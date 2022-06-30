@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
 	int x = 0, y = 0, quit = 1;
 	
 	//滑动距离
-	int x1=0, xx=0, z=100;
+	int x1=0, xx=0, a=0, b=0, z=50;
 	
 	//帧
 	int fps = 0;
@@ -154,37 +154,16 @@ int main(int argc, char *argv[]){
 		
 		//手滑动效果
 		if(flag==2){
-			if(xx<-100){
-				xx -= z;
-				if(xx<-1000) {
-					nextmonth(&year, &month);
-					xx=1000;
-					flag=3;
-				}
-			}else if(xx>100){
-				xx += z;
-				if(xx>1000){
-					lastmonth(&year, &month); 
-					xx=-1000;
-					flag=3;
-				} 
-			}else{
-				xx=0;
-			}
-		}
-		
-		//自动滑动效果
-		if(flag==3){
-			if(xx>0)
+			xx = (xx+a)%2000+b;
+			if(xx<z-1000) nextmonth(&year, &month);
+			if(xx>1000-z) lastmonth(&year, &month); 
+			if(xx>-z&&xx<z)
 			{
-				xx -= z;
-			}else if(xx<0){
-				xx += z;
-			}else{
-				flag = 0;
+				xx=0;
+				flag=0;
 			}
 		}
-		
+	
 		//帧数
 		fps = SDL_GetTicks() - fps;
 		if (fps < 20) {
@@ -212,6 +191,16 @@ int main(int argc, char *argv[]){
 				x = event.button.x;
 				y = event.button.y;
 				xx = x -x1;
+				if(xx>0)
+				{
+					a=(1000+z)-1;
+					b=z-1000;
+				}
+				if(xx<0)
+				{
+					a=-(1000+z)+1;
+					b=1000-z;
+				}
 				flag = 1;
 			}
 			
