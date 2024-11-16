@@ -70,9 +70,19 @@
          -->
 		<!--landscape portrait-->
 			
+		<!--
+		screenOrientation的值有以下几种：
+		landscape：横向
+		portrait：纵向
+		unspecified：默认值，由系统判断状态自动切换
+		user：用户当前设置的orientation值.
+		behind：下一个要显示的Activity的orientation值.
+		sensor：传感器的方向
+		nosensor：不使用传感器，这个效果差不多等于unspecified
+		-->
         <activity 
 			android:name="SDLActivity"
-			android:screenOrientation="portrait"
+			android:screenOrientation="landscape"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"

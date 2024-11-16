@@ -19,7 +19,7 @@ SDL_Texture *bkgtex = NULL;
 SDL_Texture *footex = NULL;
 SDL_Texture *joytex = NULL;
 Mix_Music *low = NULL;
-Mix_Music *sound = NULL;
+//Mix_Music *sound = NULL;
 
 SDL_Event event;
 SDL_Rect dstrect;
@@ -94,10 +94,10 @@ int Init() {
   if(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0){
 	  return 1;
   }
- low = Mix_LoadWAV( "low.wav" );
+ low = Mix_LoadWAV( "audio/low.wav" );
  
  //Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
- sound = Mix_LoadMUS("test.mp3");
+ //sound = Mix_LoadMUS("test.mp3");
  
   return 0;
 }
