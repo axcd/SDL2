@@ -1,14 +1,9 @@
 #include<stdlib.h>
+
 #include "SDL.h"
 #include "SDL_ttf.h"
 
-typedef struct{
-	char * str;
-	TTF_Font *font;
-	SDL_Color *textColor;
-	int w;
-	int h;
-} Font_Texture;
+#include "calendarView.h"
 
 //获取两者最小值
 int min(int a, int b)

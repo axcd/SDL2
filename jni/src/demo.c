@@ -1,10 +1,12 @@
 #include<stdio.h>
+
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
-#include "calendarView.c"
-#include "calendar.c"
+
+#include "calendar.h"
+#include "calendarView.h"
 
 //窗口变量
 SDL_Window* window = NULL;
@@ -27,6 +29,23 @@ SDL_Event event;
 int year = 2022;
 int month = 6;
 int day = 18;
+
+//记录今天
+int now_year = 2022;
+int now_month = 6;
+int now_day = 18;
+
+//存放每个月月份天数的数组，这是全局变量
+int monthDays[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
+
+
+char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
+//月天数
+char *days[32] = {"0","01","02","03","04","05","06","07","08","09",
+				"10","11","12","13","14","15","16","17","18","19",
+				"20","21","22","23","24","25","26","27","28","29",
+				"30","31"
+				};
 
 //main
 int main(int argc, char *argv[]){
@@ -64,7 +83,7 @@ int main(int argc, char *argv[]){
 	int fps = 0;
 	
 	//获取当前年月
-	date();
+	date(&now_year, &now_month, &now_day);
 	year = now_year;
 	month = now_month;
 	//day = now_day;
@@ -84,7 +103,7 @@ int main(int argc, char *argv[]){
 	while (quit){
 		
 		//保证使用时时间跳转
-		date();
+		date(&now_year, &now_month, &now_day);
 		
 		//计算开始结束
 		int s=dayOftheWeekThisYearQueryMonth(year,month);

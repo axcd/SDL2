@@ -1,34 +1,18 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
-
-//记录今天
-int now_year = 2022;
-int now_month = 6;
-int now_day = 18;
-
-//存放每个月月份天数的数组，这是全局变量
-int monthDays[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
-
-
-char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
-//月天数
-char *days[32] = {"0","01","02","03","04","05","06","07","08","09",
-				"10","11","12","13","14","15","16","17","18","19",
-				"20","21","22","23","24","25","26","27","28","29",
-				"30","31"
-				};
+#include<string.h>
 
 //当前年月
-void date()
+void date(int *year, int *month, int *day)
 {
 	time_t now;
 	struct tm *p;
 	time (&now);
 	p=localtime(&now);
-	now_year = p->tm_year+1900;
-	now_month = p->tm_mon+1;
-	now_day = p->tm_mday;
+	*year = p->tm_year+1900;
+	*month = p->tm_mon+1;
+	*day = p->tm_mday;
 }
 
 //判断是否润年
@@ -48,6 +32,7 @@ int dayOftheWeekThisYear(int year)
 int dayOftheWeekThisYearQueryMonth(int year,int month)
 {
     int totalDays=0;
+	int monthDays[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
 	
 	//同样的修正数组，修正二月的天数
     if(isLeapYear(year)==1)
