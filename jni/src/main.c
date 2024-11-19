@@ -44,8 +44,22 @@ char *week[7] = {"日", "一", "二", "三", "四", "五", "六"};
 char *days[32] = {"0","01","02","03","04","05","06","07","08","09",
 				"10","11","12","13","14","15","16","17","18","19",
 				"20","21","22","23","24","25","26","27","28","29",
-				"30","31"
-				};
+				"30","31"};
+
+int init(){
+	
+	//启动画面
+  	bkg = IMG_Load("bkg.jpg");
+  	if (bkg == NULL) {
+   	 	return 1;
+  	}
+	
+ 	bkgtex = SDL_CreateTextureFromSurface(render, bkg);
+    SDL_FreeSurface(bkg);
+	SDL_SetTextureAlphaMod(bkgtex, 0);
+    SDL_RenderCopy(render, bkgtex, NULL, NULL);
+  	//SDL_RenderPresent(render);
+}
 
 //main
 int main(int argc, char *argv[]){
@@ -88,17 +102,7 @@ int main(int argc, char *argv[]){
 	month = now_month;
 	//day = now_day;
 	
-	//启动画面
-  	bkg = IMG_Load("bkg.jpg");
-  	if (bkg == NULL) {
-   	 	return 1;
-  	}
- 	bkgtex = SDL_CreateTextureFromSurface(render, bkg);
-    SDL_FreeSurface(bkg);
-	SDL_SetTextureAlphaMod(bkgtex, 0);
-    SDL_RenderCopy(render, bkgtex, NULL, NULL);
-  	SDL_RenderPresent(render);
-	
+	init();
 	//主循环
 	while (quit){
 		
@@ -124,12 +128,12 @@ int main(int argc, char *argv[]){
 		//text(render, font, datestr(year, month, ss, "."), textColor, rect, 15);
 		
 		//画日历背景
-		setRect(&rect, 90, 400, 900, h);
+		setRect(&rect, 80, 390, 920, h+20);
 		changeRect(&rect, xx, 0, 0, 0);
-		fillrect(render, &rect, 200, 200, 250, 0);
-	
+		fillrect(render, &rect, 255, 255, 255, 255);
+
 		//画周几
-		setRect(&rect, 90, 250, 120, 140);
+		setRect(&rect, 90, 240, 120, 140);
 		changeRect(&rect, xx, 0, 0, 0);
 		setTextColor(&textColor, 250, 0, 250);
 		for(int i=0;i<7;i++){
@@ -175,14 +179,27 @@ int main(int argc, char *argv[]){
 		if(flag==2){
 			xx = (xx+a)%2000+b;
 			if(xx<z-1000) nextmonth(&year, &month);
-			if(xx>1000-z) lastmonth(&year, &month); 
+			if(xx>-(z-1000)) lastmonth(&year, &month); 
 			if(xx>-z&&xx<z)
 			{
 				xx=0;
 				flag=0;
 			}
 		}
-	
+		
+		//未达最大距离返回
+		if(flag==3){
+			if(xx<=-z)
+				xx += 30;
+			if(xx>=z)
+				xx -= 30;
+			if(xx>-z&&xx<z)
+			{
+				xx=0;
+				flag=0;
+			}
+		}
+		
 		//帧数
 		fps = SDL_GetTicks() - fps;
 		if (fps < 20) {
@@ -212,21 +229,25 @@ int main(int argc, char *argv[]){
 				xx = x -x1;
 				if(xx>0)
 				{
-					a=(1000+z)-1;
+					a=z+1000;
 					b=z-1000;
 				}
 				if(xx<0)
 				{
-					a=-(1000+z)+1;
-					b=1000-z;
+					a=-(z+1000);
+					b=-(z-1000);
 				}
 				flag = 1;
 			}
 			
 			//抬起动作
 			if(event.type == SDL_MOUSEBUTTONUP){
-				flag = 2;
-				break;
+				if(xx>200||xx<-200){
+					flag = 2;
+				}else{
+					flag = 3;
+				}		
+				//break;
 			}
 		}
 	}

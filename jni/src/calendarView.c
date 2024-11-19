@@ -58,7 +58,7 @@ void setTextColor(SDL_Color *pTextColor, int r, int g, int b)
 	(*pTextColor).b = b;
 }
 
-//更新rect
+//更新rect位置
 void setRect(SDL_Rect *prect, int x, int y, int w, int h)
 {
 	(*prect).x = x;
